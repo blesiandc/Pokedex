@@ -1,11 +1,19 @@
-// app/pokedex/page.tsx
-
 "use client";
 
 import { useEffect, useState } from "react";
-import { fetchPokemon } from "../../action/fetchPokemon"; // Import your fetch function
+import { fetchPokemon } from "../../action/fetchPokemon";
+import Image from "next/image";
 
-// Define the type for the Pokemon object
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import GridIcon from "../../assets/svg/grid.svg";
+import ListIcon from "../../assets/svg/list.svg";
+
 type Pokemon = {
   name: string;
   url: string;
@@ -15,56 +23,75 @@ const Pokedex = () => {
   const [pokemon, setPokemon] = useState<Pokemon[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
-  const limit = 10; // Number of Pokémon to fetch
-  const offset = 0; // Starting point for fetching Pokémon
+  const limit = 10;
+  const offset = 0;
 
   useEffect(() => {
     const getPokemon = async () => {
       try {
-        const data = await fetchPokemon(limit, offset); // Call the fetch function
-        setPokemon(data); // Set the fetched data
+        const data = await fetchPokemon(limit, offset);
+        setPokemon(data);
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (error) {
-        setError("Error fetching Pokémon data."); // Set error message
+        setError("Error fetching Pokémon data.");
       } finally {
-        setLoading(false); // Stop loading
+        setLoading(false);
       }
     };
 
-    getPokemon(); // Call the fetch function
-  }, []); // Empty dependency array to fetch only on component mount
+    getPokemon();
+  }, []);
 
-  if (loading) return <div>Loading...</div>; // Show loading state
-  if (error) return <div className="text-red-500">{error}</div>; // Show error if it exists
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="flex flex-col my-4 mx-24">
       <div className="flex items-center justify-center">
         <h2 className="text-3xl font-semibold">Pokedex</h2>
       </div>
-      <div className="flex justify-between">
+      <div className="flex justify-between my-4">
         <div>Search</div>
-        <div>Grid Icon</div>
+        <div className="flex gap-4">
+          <button onClick={() => setViewMode("list")}>
+            <Image src={ListIcon} alt="list-icon" width={30} />
+          </button>
+          <button onClick={() => setViewMode("grid")}>
+            <Image src={GridIcon} alt="grid-icon" width={30} />
+          </button>
+        </div>
       </div>
-      <div>
-        <h1>Pokémon List</h1>
-        <ul className="grid grid-cols-2 gap-4">
-          {pokemon.map((poke: Pokemon, index: number) => {
-            // Extract Pokémon ID from the URL
-            const pokedexNo = poke.url.split("/")[6]; // Extract the ID from the URL
-            const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexNo}.png`; // Construct the image URL
 
-            return (
-              <li key={index} className="flex flex-col items-center">
-                <img src={imageUrl} alt={poke.name} className="w-24 h-24" />{" "}
-                {/* Display Pokémon image */}
-                <p>{poke.name}</p> {/* Display Pokémon name */}
-              </li>
-            );
-          })}
-        </ul>
+      <div
+        className={
+          viewMode === "grid" ? "grid grid-cols-3 gap-4" : "flex flex-col gap-4"
+        }
+      >
+        {pokemon.map((poke: Pokemon, index: number) => {
+          const pokedexNo = poke.url.split("/")[6];
+          const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexNo}.png`; // Construct the image URL
+
+          return (
+            <Card key={index} className="shadow-lg hover:shadow-xl transition">
+              <CardHeader>
+                <CardTitle>{poke.name}</CardTitle>
+                <CardDescription>Pokédex Number: {pokedexNo}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Image
+                  src={imageUrl}
+                  alt={poke.name}
+                  width={128}
+                  height={128}
+                  className="object-contain"
+                />
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
-      <div>Button</div>
     </div>
   );
 };
