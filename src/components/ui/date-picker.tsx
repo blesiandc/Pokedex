@@ -3,6 +3,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
+import { isValid } from "date-fns"; // Import isValid from date-fns
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -33,17 +34,18 @@ export function DatePickerDemo({
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {selected ? format(selected, "PPP") : <span>Pick a date</span>}
+          {selected && isValid(selected) ? (
+            format(selected, "PPP")
+          ) : (
+            <span>Pick a date</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
         <Calendar
           mode="single"
-          selected={selected || undefined} // Pass undefined if selected is null
-          onSelect={(date) => {
-            // Convert undefined to null
-            onSelectDate(date || null);
-          }}
+          selected={selected}
+          onSelect={onSelectDate}
           initialFocus
         />
       </PopoverContent>
