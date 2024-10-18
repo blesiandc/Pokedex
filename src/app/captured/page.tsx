@@ -1,69 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { fetchPokemon } from "../../action/fetchPokemon";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GridIcon from "../../assets/svg/grid.svg";
 import ListIcon from "../../assets/svg/list.svg";
 import SearchIcon from "../../assets/svg/search.svg";
+import moment from "moment";
 
-type Pokemon = {
-  name: string;
-  url: string;
-};
-
-const Pokedex = () => {
-  const [pokemon, setPokemon] = useState<Pokemon[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+const Captured = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [offset, setOffset] = useState(0);
-  const limit = 10;
-
-  const fetchPokemonData = async (offset: number) => {
-    try {
-      const data = await fetchPokemon(limit, offset);
-      setPokemon((prev) => [...prev, ...data]);
-    } catch (error) {
-      setError("Error fetching Pokémon data.");
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadMore = () => {
-    setOffset((prev) => prev + limit);
-    fetchPokemonData(offset + limit);
-  };
-
-  useEffect(() => {
-    fetchPokemonData(offset);
-  }, [offset]);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop !==
-          document.documentElement.offsetHeight ||
-        loading
-      )
-        return;
-      loadMore();
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [loading]);
 
   // Get all keys from localStorage
   const keys = Object.keys(localStorage);
-
-  if (loading && pokemon.length === 0) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div
@@ -124,7 +74,27 @@ const Pokedex = () => {
                             width={228}
                             height={228}
                           />
-                          <div></div>
+                          <div className="flex flex-col gap-8">
+                            <div className="flex flex-col">
+                              <p className="font-mono capitalize text-xl">
+                                Nickname:
+                                <span className="font-semibold">
+                                  {parsedValue.nickname}
+                                </span>
+                              </p>
+                            </div>
+
+                            <div>
+                              <p className="font-mono capitalize text-xl">
+                                Date:
+                                <span className="font-semibold">
+                                  {moment(parsedValue.captureDate).format(
+                                    "MMMM Do YYYY"
+                                  )}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     ) : (
@@ -138,10 +108,9 @@ const Pokedex = () => {
             );
           })}
         </div>
-        {loading && <div>Loading more Pokémon...</div>}{" "}
       </div>
     </div>
   );
 };
 
-export default Pokedex;
+export default Captured;
