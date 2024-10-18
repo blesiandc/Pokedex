@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GridIcon from "../../assets/svg/grid.svg";
 import ListIcon from "../../assets/svg/list.svg";
+import SearchIcon from "../../assets/svg/search.svg";
 
 type Pokemon = {
   name: string;
@@ -76,7 +77,9 @@ const Pokedex = () => {
           <h2 className="text-3xl font-semibold font-mono">Pokedex</h2>
         </div>
         <div className="flex justify-between my-4">
-          <div>Search</div>
+          <div>
+            <Image src={SearchIcon} alt="search-icon" width={30} />
+          </div>
           <div className="flex gap-4">
             <button onClick={() => setViewMode("list")}>
               <Image src={ListIcon} alt="list-icon" width={30} />
@@ -137,8 +140,9 @@ const Pokedex = () => {
             );
           })}
         </div>
-        {loading && <div>Loading more Pokémon...</div>}{" "}
+        {loading && <div>Loading more Pokémon...</div>}
       </div>
+      <div>Footer</div>
     </div>
   );
 };

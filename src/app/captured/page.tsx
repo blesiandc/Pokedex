@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GridIcon from "../../assets/svg/grid.svg";
 import ListIcon from "../../assets/svg/list.svg";
+import SearchIcon from "../../assets/svg/search.svg";
 
 type Pokemon = {
   name: string;
@@ -26,9 +27,9 @@ const Pokedex = () => {
     try {
       const data = await fetchPokemon(limit, offset);
       setPokemon((prev) => [...prev, ...data]);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       setError("Error fetching Pokémon data.");
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -58,10 +59,11 @@ const Pokedex = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [loading]);
 
+  // Get all keys from localStorage
+  const keys = Object.keys(localStorage);
+
   if (loading && pokemon.length === 0) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
-
-  console.log(pokemon, "pokemon");
 
   return (
     <div
@@ -76,7 +78,9 @@ const Pokedex = () => {
           <h2 className="text-3xl font-semibold font-mono">Captured</h2>
         </div>
         <div className="flex justify-between my-4">
-          <div>Search</div>
+          <div>
+            <Image src={SearchIcon} alt="search-icon" width={30} />
+          </div>
           <div className="flex gap-4">
             <button onClick={() => setViewMode("list")}>
               <Image src={ListIcon} alt="list-icon" width={30} />
@@ -93,19 +97,21 @@ const Pokedex = () => {
               : "flex flex-col gap-4"
           }
         >
-          {pokemon.map((poke: Pokemon, index: number) => {
-            const pokedexNo = poke.url.split("/")[6];
-            const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexNo}.png`;
+          {keys.map((key) => {
+            const value = localStorage.getItem(key);
+            const parsedValue = JSON.parse(value);
+            const pokedexId = parsedValue.pokedexId;
+            const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexId}.png`;
 
             return (
-              <Link key={index} href={`/pokedex/${pokedexNo}`}>
+              <Link key={key} href={`/pokedex/${pokedexId}`}>
                 <Card
-                  key={index}
+                  key={key}
                   className="shadow-lg hover:shadow-xl transition"
                 >
                   <CardHeader>
                     <CardTitle className="font-mono capitalize text-2xl">
-                      {poke.name}
+                      {parsedValue.nickname}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -114,7 +120,7 @@ const Pokedex = () => {
                         <div className="flex gap-10">
                           <Image
                             src={imageUrl}
-                            alt={poke.name}
+                            alt=""
                             width={228}
                             height={228}
                           />
@@ -123,12 +129,7 @@ const Pokedex = () => {
                       </div>
                     ) : (
                       <div>
-                        <Image
-                          src={imageUrl}
-                          alt={poke.name}
-                          width={270}
-                          height={270}
-                        />
+                        <Image src={imageUrl} alt="" width={270} height={270} />
                       </div>
                     )}
                   </CardContent>

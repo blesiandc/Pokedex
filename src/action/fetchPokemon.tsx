@@ -16,6 +16,7 @@ type PokemonDetails = {
 };
 
 type PokemonSpecies = {
+  flavor_text_entries(flavor_text_entries: any): unknown;
   name: string;
   height: number;
   weight: number;
