@@ -124,7 +124,7 @@ const PokemonDetail = () => {
         {species?.flavor_text}
       </div>
       <div className="w-6/12 flex flex-col justify-center p-10 gap-4">
-        <p className="flex items-center justify-center">Tag as Captured</p>
+        <p className="flex items-center justify-center">Status</p>
         <Label htmlFor="nickname">Nickname</Label>
         <Input
           type="text"
