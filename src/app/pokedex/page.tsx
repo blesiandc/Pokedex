@@ -4,13 +4,7 @@ import { useEffect, useState } from "react";
 import { fetchPokemon } from "../../action/fetchPokemon";
 import Image from "next/image";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import GridIcon from "../../assets/svg/grid.svg";
 import ListIcon from "../../assets/svg/list.svg";
 
@@ -24,27 +18,46 @@ const Pokedex = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-
+  const [offset, setOffset] = useState(0);
   const limit = 10;
-  const offset = 0;
+
+  const fetchPokemonData = async (offset: number) => {
+    try {
+      const data = await fetchPokemon(limit, offset);
+      setPokemon((prev) => [...prev, ...data]);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (error) {
+      setError("Error fetching Pokémon data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMore = () => {
+    setOffset((prev) => prev + limit);
+    fetchPokemonData(offset + limit);
+  };
 
   useEffect(() => {
-    const getPokemon = async () => {
-      try {
-        const data = await fetchPokemon(limit, offset);
-        setPokemon(data);
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      } catch (error) {
-        setError("Error fetching Pokémon data.");
-      } finally {
-        setLoading(false);
-      }
+    fetchPokemonData(offset);
+  }, [offset]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        window.innerHeight + document.documentElement.scrollTop !==
+          document.documentElement.offsetHeight ||
+        loading
+      )
+        return;
+      loadMore();
     };
 
-    getPokemon();
-  }, []);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [loading]);
 
-  if (loading) return <div>Loading...</div>;
+  if (loading && pokemon.length === 0) return <div>Loading...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
 
   return (
@@ -63,7 +76,6 @@ const Pokedex = () => {
           </button>
         </div>
       </div>
-
       <div
         className={
           viewMode === "grid" ? "grid grid-cols-3 gap-4" : "flex flex-col gap-4"
@@ -71,13 +83,12 @@ const Pokedex = () => {
       >
         {pokemon.map((poke: Pokemon, index: number) => {
           const pokedexNo = poke.url.split("/")[6];
-          const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexNo}.png`; // Construct the image URL
+          const imageUrl = `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokedexNo}.png`;
 
           return (
             <Card key={index} className="shadow-lg hover:shadow-xl transition">
               <CardHeader>
                 <CardTitle>{poke.name}</CardTitle>
-                <CardDescription>Pokédex Number: {pokedexNo}</CardDescription>
               </CardHeader>
               <CardContent>
                 <Image
@@ -92,6 +103,7 @@ const Pokedex = () => {
           );
         })}
       </div>
+      {loading && <div>Loading more Pokémon...</div>}{" "}
     </div>
   );
 };
